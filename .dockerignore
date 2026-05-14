@@ -1,7 +1,8 @@
 target/
 .git/
 .idea/
+.vscode/
 *.iml
+*.log
+README.md
 .mvn/
-*.md
-docker-compose.yml

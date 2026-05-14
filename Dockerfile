@@ -2,10 +2,8 @@
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 
-# Instalar Maven
 RUN apk add --no-cache maven
 
-# Copiar pom.xml primero para aprovechar la caché de capas de Docker
 COPY pom.xml .
 RUN mvn dependency:go-offline -q 2>/dev/null || true
 
@@ -16,11 +14,13 @@ RUN mvn clean package -DskipTests -q
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Usuario no root: buena práctica de seguridad en contenedores
-RUN addgroup -S spring && adduser -S spring -G spring
+# Crear usuario no root y carpeta de logs con permisos correctos
+RUN addgroup -S spring && adduser -S spring -G spring \
+    && mkdir -p /app/logs \
+    && chown -R spring:spring /app
+
 USER spring
 
-# Copiar únicamente el JAR compilado desde la etapa de builder
 COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE 8080
